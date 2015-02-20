@@ -1,1 +1,1 @@
-*/15 * * * * /usr/local/sbin/reap.sh
+*/15 * * * * /usr/local/sbin/reap.sh >> /var/log/reaptmp.log 2>&1

@@ -4,6 +4,9 @@
 # Intended for use with /tmp directory that has been mounted as a separate
 # tmpfs partition.
 
+# Get timestamp for logging
+datetime=`date +%Y-%m-%d--%H:%M:%S`
+
 # Get the percentage of the /tmp directory currently in use
 tmp_percent=`\df /tmp --output=pcent | \tail -n +2 | \tr -d ' %'`
 
@@ -33,13 +36,23 @@ else
     cleanup=1
 fi
 
+# Track number of files cleaned
+cleaned_files=0
+
 # Perform cleanup if too much space is in use
 if [ $cleanup = 0 ]; then
     # Iterate over all files in /tmp of the specified age
     for filename in `find /tmp ""$clean_age"" -type f`; do
         # Delete file if not in use
         if [ ! $(fuser -s "$filename") ]; then
-            rm -f "$filename" > /dev/null 2>&1
+            rm -f "$filename"
+            # Increment file count if removal returned success
+            if [ $? = 0 ]; then
+                cleaned_files=$(($cleaned_files+1))
+            fi
         fi
     done
 fi
+
+# Output run data for logging
+echo "["$datetime"] "$tmp_percent"% of /tmp in use - Cleaned "$cleaned_files" files"
